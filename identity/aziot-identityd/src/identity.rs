@@ -8,6 +8,7 @@ use aziot_identityd_config as config;
 use crate::create_csr;
 use crate::error::{Error, InternalError};
 
+const CERT_EXPIRE_DAYS: i32 = 7;
 const IOTHUB_ENCODE_SET: &percent_encoding::AsciiSet =
     &http_common::PATH_SEGMENT_ENCODE_SET.add(b'=');
 
@@ -838,8 +839,8 @@ impl IdentityManager {
                     Error::Internal(InternalError::CreateCertificate(Box::new(err)))
                 })?;
 
-                if expiration_time.days < 1 {
-                    log::info!("{} has expired. Renewing certificate", identity_cert);
+                if expiration_time.days < CERT_EXPIRE_DAYS {
+                    log::info!("{} expires in {} days. Renewing certificate", identity_cert, expiration_time.days);
 
                     (None, cert_subject)
                 } else {
